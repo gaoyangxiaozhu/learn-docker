@@ -1,0 +1,51 @@
+#!/bin/bash
+. /lib/lsb/init-functions
+case "$1" in
+    start)
+        log_daemon_msg "Starting monitor" || true
+        if nohup python ~/monitor/instancemonitor.py  >> ~/monitor.log 2>&1 &
+        then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+        ;;
+    stop)
+        log_daemon_msg "Stopping monitor daemon" || true
+	if kill -9  $(ps aux | grep instancemonitor.py|grep -v 'grep' | awk '{printf("%d ",$2)}END{printf("\n")}')
+        then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+        ;;
+    status)
+        log_daemon_msg "check monitor daemon ps" || true
+	if ps aux| grep instancemonitor.py
+        then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+        ;;
+    restart)
+        log_daemon_msg "Restarting monitor daemon"
+	if echo '{"config":{"udp_shutdown":123}}' >/dev/udp/localhost/8003
+        then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+        log_daemon_msg "stoped monitor daemon"
+        if nohup python ~/monitor/instancemonitor.py  > ~/monitor.log 2>&1 &
+        then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+        log_daemon_msg "start monitor daemon"
+        ;;
+    *)
+        log_action_msg "Usage: $0 {start|stop|restart|status}" || true
+        exit 1
+esac

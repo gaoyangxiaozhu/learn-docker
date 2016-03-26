@@ -1,0 +1,7 @@
+controller
+region1
+network
+node1
+node2
+node3
+node4
